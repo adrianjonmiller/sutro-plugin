@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sutro": {
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp/sutro/dist/index.js"],
+      "env": {
+        "SUTRO_API_KEY": ""
+      }
+    }
+  }
+}

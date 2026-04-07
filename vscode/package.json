@@ -1,0 +1,26 @@
+{
+  "name": "sutro-dev-agents",
+  "displayName": "Sutro (dev agents)",
+  "description": "Helper commands and docs links for Sutro + MCP workflows. MCP itself is configured via VS Code settings; see repo README.",
+  "version": "0.1.0",
+  "publisher": "sutro-dev-agents",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other"],
+  "main": "./extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "commands": [
+      {
+        "command": "sutro.openDocs",
+        "title": "Sutro: Open documentation"
+      },
+      {
+        "command": "sutro.openSlangIntro",
+        "title": "Sutro: Open SLang introduction"
+      }
+    ]
+  }
+}

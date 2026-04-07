@@ -1,0 +1,18 @@
+---
+description: Conventions for working with Sutro, SLang, and the bundled MCP server
+alwaysApply: false
+---
+
+sutro-integration:
+
+- **Not affiliated**: This plugin bundle is a community/dev-agents template. Official Sutro docs live at [docs.withsutro.com](https://docs.withsutro.com).
+- **SLang**: Use the **slang** skill in this repo for syntax and patterns. Prefer SLang files (e.g. `*.slang`) when defining backends; align edits with Sutro Studio or the Sutro API when the user’s workflow uses those.
+- **MCP auth**: If you add real Sutro API tools, document the env var (e.g. `SUTRO_API_KEY`) in config samples and README. Never print secrets in tool output.
+- **Placeholder server**: The default `mcp/sutro` server exposes `sutro_placeholder` only. Replace it with HTTP calls to Sutro’s API or a hosted MCP endpoint when available.
+- **Official skill updates**: The vendored `skills/slang/SKILL.md` comes from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills). Refresh it periodically to stay in sync with SLang changes.
+
+## MCP tools (stub)
+
+| Tool | Purpose |
+| --- | --- |
+| `sutro_placeholder` | Sanity check and setup reminder until real Sutro tools are implemented |

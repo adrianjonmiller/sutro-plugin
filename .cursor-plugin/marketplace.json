@@ -1,0 +1,17 @@
+{
+  "name": "sutro-dev-agents-marketplace",
+  "owner": {
+    "name": "sutro-dev-agents contributors"
+  },
+  "metadata": {
+    "description": "Sutro dev-agents bundle — MCP, skills, and rules for Cursor.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "sutro-dev-agents",
+      "source": "./",
+      "description": "Sutro + SLang: local MCP stub, SLang skill, setup skill, conventions rule."
+    }
+  ]
+}

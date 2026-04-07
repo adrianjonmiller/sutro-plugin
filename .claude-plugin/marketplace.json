@@ -1,0 +1,15 @@
+{
+  "name": "sutro-dev-agents-marketplace",
+  "owner": {
+    "name": "sutro-dev-agents contributors"
+  },
+  "version": "0.1.0",
+  "description": "Sutro dev-agents — MCP, SLang skill, and agent rules for Claude Code.",
+  "plugins": [
+    {
+      "name": "sutro-dev-agents",
+      "source": "./",
+      "description": "Sutro + SLang integration bundle (MCP stub + skills + rules)"
+    }
+  ]
+}

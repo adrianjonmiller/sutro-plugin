@@ -1,0 +1,19 @@
+{
+  "name": "sutro-dev-agents",
+  "displayName": "Sutro (dev agents)",
+  "version": "0.1.0",
+  "description": "Sutro + SLang support for AI agents: MCP stub, Cursor rules, and vendored SLang skill. Pair with docs.withsutro.com and your Sutro API credentials.",
+  "author": {
+    "name": "sutro-dev-agents contributors"
+  },
+  "homepage": "https://docs.withsutro.com",
+  "logo": "assets/logo.svg",
+  "keywords": [
+    "sutro",
+    "slang",
+    "backend",
+    "mcp",
+    "ai-agents",
+    "cursor"
+  ]
+}
