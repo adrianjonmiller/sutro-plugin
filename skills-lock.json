@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "slang": {
+      "source": "SutroOrg/sutro-skills",
+      "sourceType": "github",
+      "computedHash": "30ba3c8b4e1f2ca38b99174f6fbe34a28a22e7e0eca8055343fc2775a761cc0c"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Sutro dev agents
 
-Bundled pieces to work on [Sutro](https://withsutro.com) backends from **Cursor**, **Claude Code**, and **VS Code**: a small **MCP server** (stub today), **SLang** reference skill (vendored from upstream), a **setup** skill, **rules**, and **sample MCP configs**.
+Bundled pieces to work on [Sutro](https://withsutro.com) backends from **Cursor**, **Claude Code**, and **VS Code**: a small **stdio MCP** server (bundle auth + `sutro_hello`), **SLang** reference skill (vendored from upstream), a **setup** skill, **rules**, and **sample MCP configs**.
 
 This repository is a template for your team or product. It is **not** an official Sutro release—verify behavior against [docs.withsutro.com](https://docs.withsutro.com).
 
@@ -8,11 +8,11 @@ This repository is a template for your team or product. It is **not** an officia
 
 | Path | Purpose |
 | --- | --- |
-| `mcp/sutro` | Node.js **stdio MCP** server. Ships one tool, `sutro_placeholder`. Extend with real Sutro HTTP API calls. |
+| `mcp/sutro` | Node.js **stdio MCP** server. Uses `SUTRO_SECURITY_BUNDLE_DIR` (mTLS + JWT) and exposes `sutro_hello` (`GET /hello`). Add more tools in `src/`. |
 | `config/` | Sample MCP snippets for Cursor, Claude Code, and VS Code (`mcp.*.sample.json`). |
 | `skills/slang/` | Vendored **SLang** language reference from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills) (`skills/slang/SKILL.md`). Refresh periodically. |
-| `skills/sutro-mcp-setup/` | How to build, wire, and replace the MCP stub. |
-| `rules/sutro.mdc` | Cursor rule: conventions and stub vs production MCP. Copy into `.cursor/rules/` or enable for your plugin distribution. |
+| `skills/sutro-mcp-setup/` | How to build, wire env vars, and extend the MCP server. |
+| `rules/sutro.mdc` | Cursor rule: conventions, MCP tools, and bundle auth. Copy into `.cursor/rules/` or enable for your plugin distribution. |
 | `.cursor-plugin/` | Cursor marketplace metadata. |
 | `.claude-plugin/` | Claude Code plugin + marketplace metadata. |
 | `vscode/` | Minimal VS Code extension: open Sutro docs from the command palette. |
@@ -21,7 +21,7 @@ This repository is a template for your team or product. It is **not** an officia
 ## Prerequisites
 
 - **Node.js 18+** (for `mcp/sutro`).
-- Optionally **Sutro API credentials** once you implement real tools (set env vars to match your server code).
+- **Sutro security bundle** extracted to a directory on disk; set **`SUTRO_SECURITY_BUNDLE_DIR`** in MCP `env` (see `config/mcp.*.sample.json`). Optional **`SUTRO_API_BASE`** (default `https://sapi.withsutro.com`).
 
 ## Build the MCP server
 
@@ -37,8 +37,9 @@ The runnable entrypoint is `mcp/sutro/dist/index.js`.
 
 1. Merge `config/mcp.cursor-sample.json` into your **Cursor MCP** configuration (project or user), or paste the `sutro` block from the sample.
 2. Adjust `args` to an **absolute path** if `${workspaceFolder}` is not supported in your Cursor version.
-3. Add **`rules/sutro.mdc`** under `.cursor/rules/` if you want it applied (set `alwaysApply` in the frontmatter if desired).
-4. Install or reference this repo as a **Cursor plugin** using `.cursor-plugin/plugin.json` when publishing.
+3. Set **`SUTRO_SECURITY_BUNDLE_DIR`** to your extracted bundle path (absolute path recommended).
+4. Add **`rules/sutro.mdc`** under `.cursor/rules/` if you want it applied (set `alwaysApply` in the frontmatter if desired).
+5. Install or reference this repo as a **Cursor plugin** using `.cursor-plugin/plugin.json` when publishing.
 
 ## Claude Code
 

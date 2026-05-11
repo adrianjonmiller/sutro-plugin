@@ -7,7 +7,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "sutro-provision": "node scripts/sutro-provision-from-env.mjs"
   },
   "license": "MIT",
   "dependencies": {
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.2",
+    "jose": "^6.1.3",
     "typescript": "^6.0.2"
   },
   "engines": {

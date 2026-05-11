@@ -6,7 +6,8 @@
         "command": "node",
         "args": ["${workspaceFolder}/mcp/sutro/dist/index.js"],
         "env": {
-          "SUTRO_API_KEY": ""
+          "SUTRO_SECURITY_BUNDLE_DIR": "/Users/adrianmiller/.config/sutro/security-bundle",
+          "SUTRO_API_BASE": "https://sapi.withsutro.com"
         }
       }
     }
