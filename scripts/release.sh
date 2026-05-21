@@ -15,6 +15,14 @@ fi
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
+# Warn if git remote still points at the old repo name (breaks trusted publisher OIDC)
+ORIGIN_URL="$(git remote get-url origin 2>/dev/null || true)"
+if [[ -n "$ORIGIN_URL" && "$ORIGIN_URL" != *"sutro-mcp-server"* ]]; then
+  echo "Warning: origin remote does not reference sutro-mcp-server:"
+  echo "  $ORIGIN_URL"
+  echo "Update with: git remote set-url origin git@github.com:adrianjonmiller/sutro-mcp-server.git"
+fi
+
 # Ensure working tree is clean
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "Error: working tree is dirty. Commit or stash changes first."

@@ -21,9 +21,20 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "22.14"
           registry-url: "https://registry.npmjs.org"
           package-manager-cache: false
+
+      # Trusted publishing requires npm CLI >= 11.5.1 and Node >= 22.14
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest
+
+      - name: Verify toolchain
+        run: |
+          node -v
+          npm -v
+          node -e "const [maj,min]=process.versions.node.split('.').map(Number); if(maj<22||(maj===22&&min<14)) process.exit(1)"
+          node -e "const v=require('child_process').execSync('npm -v').toString().trim().split('.').map(Number); if(v[0]<11||(v[0]===11&&v[1]<5)||(v[0]===11&&v[1]===5&&v[2]<1)) process.exit(1)"
 
       - run: npm ci
 
@@ -31,4 +42,5 @@ jobs:
 
       - run: npm test
 
-      - run: npm publish
+      - name: Publish
+        run: npm publish
