@@ -9,7 +9,15 @@ Stdio [MCP](https://modelcontextprotocol.io) server for [Sutro](https://withsutr
 - Node.js 18+
 - Sutro security bundle — download and extract from [console.withsutro.com](https://console.withsutro.com/). See [auth docs](https://docs.withsutro.com/docs/getting-started/auth/how-to-secure-connections).
 
-## Setup
+## Quick start
+
+```bash
+npx sutro-mcp-server setup
+```
+
+Interactive setup that asks for your bundle path, validates it, detects your editor, and configures everything. If you prefer manual setup, read on.
+
+## Manual setup
 
 **1. Scaffold agent instruction files into your project**
 
@@ -21,7 +29,28 @@ Writes `CLAUDE.md`, `.github/copilot-instructions.md`, and `.cursor/rules/sutro.
 
 **2. Add the MCP server to your editor**
 
-_Cursor / Claude Code_ (`mcpServers` block):
+### Claude Code (CLI)
+
+```bash
+claude mcp add sutro \
+  -e SUTRO_SECURITY_BUNDLE_DIR=/path/to/your/security-bundle \
+  -- npx -y sutro-mcp-server
+```
+
+To scope the server to the current project only:
+
+```bash
+claude mcp add sutro --scope project \
+  -e SUTRO_SECURITY_BUNDLE_DIR=/path/to/your/security-bundle \
+  -- npx -y sutro-mcp-server
+```
+
+Verify: `claude mcp list`
+
+### Cursor
+
+Add to MCP settings (`mcpServers` block):
+
 ```json
 {
   "mcpServers": {
@@ -37,7 +66,10 @@ _Cursor / Claude Code_ (`mcpServers` block):
 }
 ```
 
-_VS Code_ (`settings.json`):
+### VS Code
+
+Add to `settings.json`:
+
 ```json
 {
   "mcp": {
