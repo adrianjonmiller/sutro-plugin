@@ -97,7 +97,7 @@ The server reads a **security bundle** from `SUTRO_SECURITY_BUNDLE_DIR`. Require
 
 ## Source
 
-[github.com/adrianjonmiller/cursor-sutro-plugin](https://github.com/adrianjonmiller/cursor-sutro-plugin)
+[github.com/adrianjonmiller/sutro-mcp-server](https://github.com/adrianjonmiller/sutro-mcp-server)
 
 ## License
 

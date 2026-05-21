@@ -1,6 +1,6 @@
 {
   "name": "sutro-mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "type": "module",
   "description": "Stdio MCP server for Sutro — exposes Sutro project, app, SLang deploy, and secrets tools to AI editors.",
   "main": "dist/index.js",
@@ -23,7 +23,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adrianjonmiller/cursor-sutro-plugin.git"
+    "url": "https://github.com/adrianjonmiller/sutro-mcp-server.git"
   },
   "publishConfig": {
     "access": "public"
