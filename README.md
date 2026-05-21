@@ -46,11 +46,13 @@ The runnable entrypoint is `mcp/sutro/dist/index.js`.
 1. Open `config/mcp.claude-sample.json` and replace `/ABSOLUTE/PATH/TO/sutro-dev-agents` with your clone path.
 2. Merge the `mcpServers.sutro` entry into Claude Code’s MCP config for your environment.
 3. Install the plugin via `.claude-plugin/` and `marketplace.json` if you run a marketplace (`/plugin marketplace add …`).
+4. `CLAUDE.md` at the repo root is loaded automatically by Claude Code and provides the MCP tool catalog, auth conventions, and workflow instructions.
 
 ## VS Code
 
 1. **MCP**: If your build of VS Code exposes MCP settings, merge the structure in `config/mcp.vscode-sample.json` into **User** or **Workspace** settings. Keys and nesting differ by version and extension—align with your editor’s current MCP docs if the sample does not validate.
 2. **Extension** (optional): open this folder’s `vscode/` in VS Code and run **Extensions: Install Extension from Location…**, or package with `@vscode/vsce` for the Marketplace / Open VSX.
+3. `.github/copilot-instructions.md` is loaded automatically by GitHub Copilot and provides the MCP tool catalog, auth conventions, and workflow instructions.
 
 Commands contributed:
 

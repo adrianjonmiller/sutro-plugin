@@ -8,7 +8,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "sutro-provision": "node scripts/sutro-provision-from-env.mjs"
+    "sutro-provision": "node scripts/sutro-provision-from-env.mjs",
+    "sutro-probe-shapes": "node scripts/sutro-probe-shapes.mjs",
+    "test": "npm run build && node --test test/**/*.test.mjs"
   },
   "license": "MIT",
   "dependencies": {

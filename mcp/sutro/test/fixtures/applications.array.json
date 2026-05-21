@@ -1,0 +1,16 @@
+[
+  {
+    "id": "8cbebb4f-6b10-43c0-bcc9-6004e52d2d93",
+    "name": "Secure Chat Messenger",
+    "projectId": "257deb69-c503-4777-822d-96dcd53c7c3a",
+    "status": { "jobs": [] },
+    "scode": { "appId": "8cbebb4f-6b10-43c0-bcc9-6004e52d2d93" }
+  },
+  {
+    "id": "13528ab1-7114-4365-be88-bbdc1f6a84fe",
+    "name": "CRM Prototype",
+    "projectId": "257deb69-c503-4777-822d-96dcd53c7c3a",
+    "status": { "jobs": [] },
+    "scode": { "appId": "13528ab1-7114-4365-be88-bbdc1f6a84fe" }
+  }
+]

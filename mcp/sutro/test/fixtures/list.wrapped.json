@@ -1,0 +1,9 @@
+{
+  "items": [
+    { "id": "one" },
+    { "id": "two" }
+  ],
+  "metadata": {
+    "nextPageToken": "abc123"
+  }
+}

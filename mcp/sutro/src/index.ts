@@ -11,6 +11,11 @@ import {
   resolveBundleDir,
   sutroRequest,
 } from "./sutroClient.js";
+import {
+  normalizeArrayFirstListResponse,
+  normalizeObjectResponse,
+  normalizeOpenApiResponse,
+} from "./responseShapes.js";
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -263,8 +268,8 @@ server.registerTool(
       if (statusCode < 200 || statusCode >= 300) {
         return errResult({ ok: false, statusCode, response: json });
       }
-      const data = json as { items?: unknown[]; metadata?: unknown };
-      return okResult({ ok: true, statusCode, projects: data.items ?? [], metadata: data.metadata });
+      const data = normalizeArrayFirstListResponse(json, "GET /projects");
+      return okResult({ ok: true, statusCode, projects: data.items, metadata: data.metadata });
     }),
 );
 
@@ -279,9 +284,13 @@ server.registerTool(
         .uuid()
         .optional()
         .describe("Filter applications to a specific project ID"),
+      includeScode: z
+        .boolean()
+        .optional()
+        .describe("Include full SCode in each application object (default false)"),
     }),
   },
-  async ({ projectId }) =>
+  async ({ projectId, includeScode }) =>
     runTool(async () => {
       const path = projectId
         ? `/projects/${projectId}/applications`
@@ -290,8 +299,114 @@ server.registerTool(
       if (statusCode < 200 || statusCode >= 300) {
         return errResult({ ok: false, statusCode, response: json });
       }
-      const data = json as { items?: unknown[]; metadata?: unknown };
-      return okResult({ ok: true, statusCode, applications: data.items ?? [], metadata: data.metadata });
+      const data = normalizeArrayFirstListResponse(json, `GET ${path}`);
+      const applications = includeScode
+        ? data.items
+        : data.items.map((item) => {
+            if (item && typeof item === "object" && !Array.isArray(item)) {
+              const app = item as Record<string, unknown>;
+              const { scode: _scode, ...rest } = app;
+              return rest;
+            }
+            return item;
+          });
+      return okResult({ ok: true, statusCode, applications, metadata: data.metadata });
+    }),
+);
+
+server.registerTool(
+  "sutro_pull_project_data",
+  {
+    description:
+      "Pull project metadata and all applications for a project. Set includeScode=true for full editable app payloads.",
+    inputSchema: z.object({
+      projectId: z.string().uuid().describe("The project UUID"),
+      includeScode: z
+        .boolean()
+        .optional()
+        .describe("Include full SCode in applications (default false)"),
+    }),
+  },
+  async ({ projectId, includeScode }) =>
+    runTool(async () => {
+      const [projectRes, appsRes] = await Promise.all([
+        callSutro({ method: "GET", path: `/projects/${projectId}` }),
+        callSutro({ method: "GET", path: `/projects/${projectId}/applications` }),
+      ]);
+      if (projectRes.statusCode < 200 || projectRes.statusCode >= 300) {
+        return errResult({
+          ok: false,
+          statusCode: projectRes.statusCode,
+          response: projectRes.json,
+          endpoint: `/projects/${projectId}`,
+        });
+      }
+      if (appsRes.statusCode < 200 || appsRes.statusCode >= 300) {
+        return errResult({
+          ok: false,
+          statusCode: appsRes.statusCode,
+          response: appsRes.json,
+          endpoint: `/projects/${projectId}/applications`,
+        });
+      }
+
+      const project = normalizeObjectResponse(projectRes.json, `GET /projects/${projectId}`);
+      const applicationsData = normalizeArrayFirstListResponse(
+        appsRes.json,
+        `GET /projects/${projectId}/applications`,
+      );
+      const applications = includeScode
+        ? applicationsData.items
+        : applicationsData.items.map((item) => {
+            if (item && typeof item === "object" && !Array.isArray(item)) {
+              const app = item as Record<string, unknown>;
+              const { scode: _scode, ...rest } = app;
+              return rest;
+            }
+            return item;
+          });
+
+      return okResult({
+        ok: true,
+        statusCode: 200,
+        project,
+        applications,
+        metadata: applicationsData.metadata,
+      });
+    }),
+);
+
+server.registerTool(
+  "sutro_pull_app_for_edit",
+  {
+    description:
+      "Pull a single app with full SCode so it can be reviewed/edited before deploy.",
+    inputSchema: z.object({
+      applicationId: z.string().uuid().describe("The application UUID"),
+    }),
+  },
+  async ({ applicationId }) =>
+    runTool(async () => {
+      const { statusCode, json } = await callSutro({
+        method: "GET",
+        path: `/applications/${applicationId}`,
+      });
+      if (statusCode < 200 || statusCode >= 300) {
+        return errResult({ ok: false, statusCode, response: json });
+      }
+      const application = normalizeObjectResponse(
+        json,
+        "GET /applications/:applicationId",
+      );
+      return okResult({
+        ok: true,
+        statusCode,
+        application,
+        notes: [
+          "This payload includes full `scode` when available.",
+          "For source edits, transform to SLang and deploy using `sutro_deploy_slang` or `sutro_apply_slang_changes`.",
+        ],
+      });
     }),
 );
 
@@ -319,7 +434,7 @@ server.registerTool(
       if (statusCode < 200 || statusCode >= 300) {
         return errResult({ ok: false, statusCode, response: json });
       }
-      const app = json as Record<string, unknown>;
+      const app = normalizeObjectResponse(json, "GET /applications/:applicationId");
       if (!includeScode) {
         const { scode: _scode, ...rest } = app;
         return okResult({ ok: true, statusCode, application: rest });
@@ -346,7 +461,11 @@ server.registerTool(
       if (statusCode < 200 || statusCode >= 300) {
         return errResult({ ok: false, statusCode, response: json });
       }
-      return okResult({ ok: true, statusCode, status: json });
+      const status = normalizeObjectResponse(
+        json,
+        "GET /applications/:applicationId/status",
+      );
+      return okResult({ ok: true, statusCode, status });
     }),
 );
 
@@ -367,7 +486,11 @@ server.registerTool(
       if (statusCode < 200 || statusCode >= 300) {
         return errResult({ ok: false, statusCode, response: json });
       }
-      return okResult({ ok: true, statusCode, spec: json ?? bodyText });
+      return okResult({
+        ok: true,
+        statusCode,
+        spec: normalizeOpenApiResponse(json, bodyText),
+      });
     }),
 );
 
@@ -403,9 +526,274 @@ server.registerTool(
       if (statusCode < 200 || statusCode >= 300) {
         return errResult({ ok: false, statusCode, response: json });
       }
-      const app = json as Record<string, unknown>;
+      const app = normalizeObjectResponse(json, "PUT /applications/:applicationId/slang");
       const { scode: _scode, ...summary } = app;
       return okResult({ ok: true, statusCode, application: summary });
+    }),
+);
+
+server.registerTool(
+  "sutro_apply_slang_changes",
+  {
+    description:
+      "Apply SLang to an app, verify status, and optionally publish in one step.",
+    inputSchema: z.object({
+      applicationId: z.string().uuid().describe("The application UUID"),
+      slang: z.string().describe("SLang source code to compile and deploy"),
+      publish: z
+        .boolean()
+        .optional()
+        .describe("Publish after successful deploy (default false)"),
+      versionType: z
+        .enum(["major", "minor", "patch"])
+        .optional()
+        .describe("Version bump when publish=true (default patch)"),
+      replacePublishedVersion: z
+        .boolean()
+        .optional()
+        .describe("If true, replace the currently published version when publishing"),
+    }),
+  },
+  async ({ applicationId, slang, publish, versionType, replacePublishedVersion }) =>
+    runTool(async () => {
+      const deploy = await callSutro({
+        method: "PUT",
+        path: `/applications/${applicationId}/slang`,
+        body: { slang },
+      });
+      if (deploy.statusCode === 400) {
+        return errResult({
+          ok: false,
+          stage: "deploy",
+          statusCode: deploy.statusCode,
+          error: "SLang compile error",
+          details: deploy.json,
+        });
+      }
+      if (deploy.statusCode < 200 || deploy.statusCode >= 300) {
+        return errResult({
+          ok: false,
+          stage: "deploy",
+          statusCode: deploy.statusCode,
+          response: deploy.json,
+        });
+      }
+
+      const statusAfterDeploy = await callSutro({
+        method: "GET",
+        path: `/applications/${applicationId}/status`,
+      });
+      const deployStatus =
+        statusAfterDeploy.statusCode >= 200 && statusAfterDeploy.statusCode < 300
+          ? normalizeObjectResponse(
+              statusAfterDeploy.json,
+              "GET /applications/:applicationId/status",
+            )
+          : {
+              warning: "Could not fetch post-deploy status",
+              statusCode: statusAfterDeploy.statusCode,
+            };
+
+      if (!publish) {
+        const deployApp = normalizeObjectResponse(
+          deploy.json,
+          "PUT /applications/:applicationId/slang",
+        );
+        const { scode: _scode, ...application } = deployApp;
+        return okResult({
+          ok: true,
+          stage: "deployed",
+          deployStatusCode: deploy.statusCode,
+          application,
+          status: deployStatus,
+        });
+      }
+
+      const publishBody: Record<string, unknown> = {};
+      if (versionType) publishBody.versionType = versionType;
+      if (replacePublishedVersion !== undefined) {
+        publishBody.replacePublishedVersion = replacePublishedVersion;
+      }
+      const published = await callSutro({
+        method: "POST",
+        path: `/applications/${applicationId}/publish`,
+        body: publishBody,
+      });
+      if (published.statusCode < 200 || published.statusCode >= 300) {
+        return errResult({
+          ok: false,
+          stage: "publish",
+          deployStatusCode: deploy.statusCode,
+          publishStatusCode: published.statusCode,
+          response: published.json,
+          status: deployStatus,
+        });
+      }
+
+      const statusAfterPublish = await callSutro({
+        method: "GET",
+        path: `/applications/${applicationId}/status`,
+      });
+      const publishStatus =
+        statusAfterPublish.statusCode >= 200 && statusAfterPublish.statusCode < 300
+          ? normalizeObjectResponse(
+              statusAfterPublish.json,
+              "GET /applications/:applicationId/status",
+            )
+          : {
+              warning: "Could not fetch post-publish status",
+              statusCode: statusAfterPublish.statusCode,
+            };
+
+      return okResult({
+        ok: true,
+        stage: "published",
+        deployStatusCode: deploy.statusCode,
+        publishStatusCode: published.statusCode,
+        publishResult: published.json,
+        statusAfterDeploy: deployStatus,
+        statusAfterPublish: publishStatus,
+      });
+    }),
+);
+
+server.registerTool(
+  "sutro_apply_slang_from_file",
+  {
+    description:
+      "Apply SLang from a local file path, verify status, and optionally publish in one step.",
+    inputSchema: z.object({
+      applicationId: z.string().uuid().describe("The application UUID"),
+      filePath: z
+        .string()
+        .describe("Path to a local .slang file (absolute or relative to server cwd)"),
+      publish: z
+        .boolean()
+        .optional()
+        .describe("Publish after successful deploy (default false)"),
+      versionType: z
+        .enum(["major", "minor", "patch"])
+        .optional()
+        .describe("Version bump when publish=true (default patch)"),
+      replacePublishedVersion: z
+        .boolean()
+        .optional()
+        .describe("If true, replace the currently published version when publishing"),
+    }),
+  },
+  async ({ applicationId, filePath, publish, versionType, replacePublishedVersion }) =>
+    runTool(async () => {
+      const resolved = path.resolve(filePath);
+      if (!fs.existsSync(resolved)) {
+        return errResult({
+          ok: false,
+          error: `SLang file not found: ${resolved}`,
+        });
+      }
+      const slang = fs.readFileSync(resolved, "utf8");
+      const deploy = await callSutro({
+        method: "PUT",
+        path: `/applications/${applicationId}/slang`,
+        body: { slang },
+      });
+      if (deploy.statusCode === 400) {
+        return errResult({
+          ok: false,
+          stage: "deploy",
+          statusCode: deploy.statusCode,
+          error: "SLang compile error",
+          details: deploy.json,
+          filePath: resolved,
+        });
+      }
+      if (deploy.statusCode < 200 || deploy.statusCode >= 300) {
+        return errResult({
+          ok: false,
+          stage: "deploy",
+          statusCode: deploy.statusCode,
+          response: deploy.json,
+          filePath: resolved,
+        });
+      }
+
+      const statusAfterDeploy = await callSutro({
+        method: "GET",
+        path: `/applications/${applicationId}/status`,
+      });
+      const deployStatus =
+        statusAfterDeploy.statusCode >= 200 && statusAfterDeploy.statusCode < 300
+          ? normalizeObjectResponse(
+              statusAfterDeploy.json,
+              "GET /applications/:applicationId/status",
+            )
+          : {
+              warning: "Could not fetch post-deploy status",
+              statusCode: statusAfterDeploy.statusCode,
+            };
+
+      if (!publish) {
+        const deployApp = normalizeObjectResponse(
+          deploy.json,
+          "PUT /applications/:applicationId/slang",
+        );
+        const { scode: _scode, ...application } = deployApp;
+        return okResult({
+          ok: true,
+          stage: "deployed",
+          deployStatusCode: deploy.statusCode,
+          application,
+          status: deployStatus,
+          filePath: resolved,
+        });
+      }
+
+      const publishBody: Record<string, unknown> = {};
+      if (versionType) publishBody.versionType = versionType;
+      if (replacePublishedVersion !== undefined) {
+        publishBody.replacePublishedVersion = replacePublishedVersion;
+      }
+      const published = await callSutro({
+        method: "POST",
+        path: `/applications/${applicationId}/publish`,
+        body: publishBody,
+      });
+      if (published.statusCode < 200 || published.statusCode >= 300) {
+        return errResult({
+          ok: false,
+          stage: "publish",
+          deployStatusCode: deploy.statusCode,
+          publishStatusCode: published.statusCode,
+          response: published.json,
+          status: deployStatus,
+          filePath: resolved,
+        });
+      }
+
+      const statusAfterPublish = await callSutro({
+        method: "GET",
+        path: `/applications/${applicationId}/status`,
+      });
+      const publishStatus =
+        statusAfterPublish.statusCode >= 200 && statusAfterPublish.statusCode < 300
+          ? normalizeObjectResponse(
+              statusAfterPublish.json,
+              "GET /applications/:applicationId/status",
+            )
+          : {
+              warning: "Could not fetch post-publish status",
+              statusCode: statusAfterPublish.statusCode,
+            };
+
+      return okResult({
+        ok: true,
+        stage: "published",
+        deployStatusCode: deploy.statusCode,
+        publishStatusCode: published.statusCode,
+        publishResult: published.json,
+        statusAfterDeploy: deployStatus,
+        statusAfterPublish: publishStatus,
+        filePath: resolved,
+      });
     }),
 );
 
@@ -420,12 +808,19 @@ server.registerTool(
         .enum(["major", "minor", "patch"])
         .optional()
         .describe("Version bump type (default: patch)"),
+      replacePublishedVersion: z
+        .boolean()
+        .optional()
+        .describe("If true, replace the currently published version"),
     }),
   },
-  async ({ applicationId, versionType }) =>
+  async ({ applicationId, versionType, replacePublishedVersion }) =>
     runTool(async () => {
       const body: Record<string, unknown> = {};
       if (versionType) body.versionType = versionType;
+      if (replacePublishedVersion !== undefined) {
+        body.replacePublishedVersion = replacePublishedVersion;
+      }
       const { statusCode, json } = await callSutro({
         method: "POST",
         path: `/applications/${applicationId}/publish`,
@@ -459,8 +854,16 @@ server.registerTool(
       if (statusCode < 200 || statusCode >= 300) {
         return errResult({ ok: false, statusCode, response: json });
       }
-      const data = json as { items?: unknown[]; metadata?: unknown };
-      return okResult({ ok: true, statusCode, secrets: data.items ?? [], metadata: data.metadata });
+      const data = normalizeArrayFirstListResponse(
+        json,
+        "GET /applications/:applicationId/secrets",
+      );
+      return okResult({
+        ok: true,
+        statusCode,
+        secrets: data.items,
+        metadata: data.metadata,
+      });
     }),
 );
 

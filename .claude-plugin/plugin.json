@@ -1,8 +1,9 @@
 {
   "name": "sutro-dev-agents",
-  "description": "Sutro + SLang for Claude Code: MCP stub, skills, and rules. See README for MCP config and Sutro API setup.",
+  "description": "Sutro + SLang for Claude Code: MCP server, skills, and agent instructions. See README for MCP config and Sutro API setup.",
   "version": "0.1.0",
   "author": {
     "name": "sutro-dev-agents contributors"
-  }
+  },
+  "readme": "../CLAUDE.md"
 }

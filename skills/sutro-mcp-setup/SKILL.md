@@ -30,6 +30,18 @@ cd mcp/sutro && npm install && npm run build
 
 Use **`sutro_validate_bundle`** first to check local bundle readiness (required files + JWT refresh prerequisites), then run **`sutro_hello`** (calls `GET /hello`) to verify end-to-end connectivity.
 
+## Probe live response shapes
+
+When docs are unclear, treat live responses as the contract source of truth:
+
+1. From `mcp/sutro`, run `npm run sutro-probe-shapes` (uses mTLS + bundle bearer auth).
+2. Optional flags:
+   - `--project-id=<uuid>` to probe `/projects/:id/applications` for a specific project
+   - `--timeout-ms=10000` to tune request timeout per endpoint
+   - `--snapshot=./tmp/sutro-shapes.json` to save a sanitized shape report for comparisons
+3. Update tool parsers in `mcp/sutro/src/` to match observed top-level shapes before trusting docs.
+4. Run `npm test` in `mcp/sutro` to verify normalizers and compatibility fallbacks.
+
 ## Refresh `builder.jwt` locally (optional)
 
 If the bundle’s **`builder.jwt`** expired but you still have a signing key (**`signing.pem`** preferred, fallback **`mtls.key`**) and the correct **issuer** + **builder `sub`**, you can mint a short-lived token without pasting passwords into chat:
@@ -44,6 +56,13 @@ For a **full** org init + new builder (only when your org can run `/initializati
 
 - Implement additional Sutro HTTP calls via the same bundle auth pattern in `mcp/sutro/src/`; keep tool names stable and extend `rules/sutro.mdc` when you add tools.
 - Use **zod** input schemas per tool.
+
+## Edit and ship workflow
+
+- Use `sutro_list_projects` and `sutro_list_apps` for discovery (`includeScode=false` by default for lighter payloads).
+- Use `sutro_pull_project_data` or `sutro_pull_app_for_edit` when you need full SCode context before making changes.
+- Apply changes with `sutro_deploy_slang`, or use `sutro_apply_slang_changes` for deploy + status verification (+ optional publish) in one call. For release workflows, publish options include `versionType` and `replacePublishedVersion`.
+- If the SLang file is already on disk, use `sutro_apply_slang_from_file` to avoid sending large inline payloads through tool arguments.
 
 ## References
 
