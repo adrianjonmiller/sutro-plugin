@@ -7,7 +7,7 @@ Stdio [MCP](https://modelcontextprotocol.io) server for [Sutro](https://withsutr
 ## Requirements
 
 - Node.js 18+
-- Sutro security bundle — download and extract from [console.withsutro.com](https://console.withsutro.com/). See [auth docs](https://docs.withsutro.com/docs/getting-started/auth/how-to-secure-connections).
+- Sutro security bundle — download and extract from [console.withsutro.com](https://console.withsutro.com/authentication). See [auth docs](https://docs.withsutro.com/docs/getting-started/auth/how-to-secure-connections).
 
 ## Quick start
 
