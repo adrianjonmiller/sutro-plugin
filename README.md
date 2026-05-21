@@ -120,15 +120,13 @@ npm run build
 
 ## Publishing
 
-Publish by pushing a version tag — GitHub Actions handles the rest:
-
 ```bash
-# Bump version in mcp/sutro/package.json first, then:
-git tag v0.1.0
-git push origin v0.1.0
+./scripts/release.sh          # patch bump (0.1.x → 0.1.x+1)
+./scripts/release.sh minor    # minor bump (0.x.0)
+./scripts/release.sh major    # major bump (x.0.0)
 ```
 
-The workflow (`.github/workflows/publish.yml`) runs `npm test` then `npm publish` with npm provenance. Requires an `NPM_TOKEN` secret set in the GitHub repo settings (`Settings → Secrets → Actions`).
+The script bumps the version in `mcp/sutro/package.json`, commits, tags, and pushes. GitHub Actions picks up the tag and runs `npm ci` → `npm run build` → `npm test` → `npm publish` via OIDC (no token needed — configured as a trusted publisher on npmjs.com).
 
 ## Updating the SLang skill
 

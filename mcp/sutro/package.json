@@ -18,7 +18,10 @@
     "prepublishOnly": "npm run build",
     "sutro-provision": "node scripts/sutro-provision-from-env.mjs",
     "sutro-probe-shapes": "node scripts/sutro-probe-shapes.mjs",
-    "test": "npm run build && node --test $(find test -name '*.test.mjs')"
+    "test": "npm run build && node --test $(find test -name '*.test.mjs')",
+    "release": "../../scripts/release.sh",
+    "release:minor": "../../scripts/release.sh minor",
+    "release:major": "../../scripts/release.sh major"
   },
   "license": "MIT",
   "repository": {
