@@ -1,6 +1,6 @@
 {
   "name": "sutro-mcp-server",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "type": "module",
   "description": "Stdio MCP server for Sutro — exposes Sutro project, app, SLang deploy, and secrets tools to AI editors.",
   "main": "dist/index.js",
