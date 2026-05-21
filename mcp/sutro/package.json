@@ -21,6 +21,13 @@
     "test": "npm run build && node --test $(find test -name '*.test.mjs')"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adrianjonmiller/cursor-sutro-plugin.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.3.6"
