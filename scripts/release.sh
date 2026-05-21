@@ -41,4 +41,4 @@ git push origin HEAD --tags
 
 echo ""
 echo "Released $NEW_VERSION — GitHub Actions will publish to npm shortly."
-echo "https://github.com/adrianjonmiller/cursor-sutro-plugin/actions"
+echo "https://github.com/adrianjonmiller/sutro-mcp-server/actions"
