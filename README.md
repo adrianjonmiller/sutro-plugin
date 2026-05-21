@@ -1,74 +1,93 @@
 # Sutro dev agents
 
-Bundled pieces to work on [Sutro](https://withsutro.com) backends from **Cursor**, **Claude Code**, and **VS Code**: a small **stdio MCP** server (bundle auth + `sutro_hello`), **SLang** reference skill (vendored from upstream), a **setup** skill, **rules**, and **sample MCP configs**.
+AI-editor integration for [Sutro](https://withsutro.com) backends: a **stdio MCP server** with 16 tools for projects, apps, SLang deploy/publish, and secrets, plus **SLang** reference skill and **agent instruction files** for Cursor, Claude Code, and VS Code.
 
-This repository is a template for your team or product. It is **not** an official Sutro release—verify behavior against [docs.withsutro.com](https://docs.withsutro.com).
+This repository is a template for your team or product. It is **not** an official Sutro release — verify behavior against [docs.withsutro.com](https://docs.withsutro.com).
+
+## Prerequisites
+
+- **Node.js 18+**
+- **Sutro security bundle** extracted to a directory on disk — get it from [console.withsutro.com](https://console.withsutro.com/). See [auth docs](https://docs.withsutro.com/docs/getting-started/auth/how-to-secure-connections) for details.
+
+## Quick start (any editor)
+
+```bash
+# In your project root:
+npx sutro-mcp-server init
+```
+
+This scaffolds `CLAUDE.md`, `.github/copilot-instructions.md`, and `.cursor/rules/sutro.mdc` into your project and prints the MCP config snippet to paste into your editor.
+
+Then set `SUTRO_SECURITY_BUNDLE_DIR` in the printed config to your extracted bundle path and add the snippet to your editor's MCP settings.
+
+Verify the connection:
+
+1. Run `sutro_validate_bundle` — checks bundle files and auth readiness
+2. Run `sutro_hello` — verifies end-to-end API connectivity
+
+## Plugin store
+
+**Cursor**: Install via `.cursor-plugin/plugin.json`. Skills and rules load automatically from the plugin directory.
+
+**Claude Code**: Install via `.claude-plugin/marketplace.json` using `/plugin marketplace add …`. `CLAUDE.md` provides agent instructions automatically.
 
 ## Contents
 
 | Path | Purpose |
 | --- | --- |
-| `mcp/sutro` | Node.js **stdio MCP** server. Uses `SUTRO_SECURITY_BUNDLE_DIR` (mTLS + JWT) and exposes `sutro_hello` (`GET /hello`). Add more tools in `src/`. |
-| `config/` | Sample MCP snippets for Cursor, Claude Code, and VS Code (`mcp.*.sample.json`). |
-| `skills/slang/` | Vendored **SLang** language reference from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills) (`skills/slang/SKILL.md`). Refresh periodically. |
-| `skills/sutro-mcp-setup/` | How to build, wire env vars, and extend the MCP server. |
-| `rules/sutro.mdc` | Cursor rule: conventions, MCP tools, and bundle auth. Copy into `.cursor/rules/` or enable for your plugin distribution. |
-| `.cursor-plugin/` | Cursor marketplace metadata. |
-| `.claude-plugin/` | Claude Code plugin + marketplace metadata. |
-| `vscode/` | Minimal VS Code extension: open Sutro docs from the command palette. |
-| `assets/logo.svg` | Plugin logo. |
+| `mcp/sutro/` | Node.js **stdio MCP server** — 16 tools for projects, apps, SLang deploy, and secrets |
+| `mcp/sutro/templates/` | Agent instruction files bundled with the npm package for `init` scaffolding |
+| `config/` | Sample MCP snippets for Cursor, Claude Code, and VS Code |
+| `skills/slang/` | Vendored **SLang** language reference from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills) |
+| `skills/sutro-mcp-setup/` | Setup, env vars, JWT refresh, and extend-the-MCP-server guide |
+| `rules/sutro.mdc` | Cursor rule: conventions, MCP tools, and bundle auth |
+| `CLAUDE.md` | Agent instructions loaded automatically by Claude Code |
+| `.github/copilot-instructions.md` | Agent instructions loaded automatically by GitHub Copilot (VS Code) |
+| `.cursor-plugin/` | Cursor marketplace metadata |
+| `.claude-plugin/` | Claude Code plugin + marketplace metadata |
+| `vscode/` | Minimal VS Code extension: open Sutro docs from the command palette |
+| `assets/logo.svg` | Plugin logo |
 
-## Prerequisites
+## MCP tools
 
-- **Node.js 18+** (for `mcp/sutro`).
-- **Sutro security bundle** extracted to a directory on disk; set **`SUTRO_SECURITY_BUNDLE_DIR`** in MCP `env` (see `config/mcp.*.sample.json`). Optional **`SUTRO_API_BASE`** (default `https://sapi.withsutro.com`).
+| Tool | Purpose |
+| --- | --- |
+| `sutro_hello` | Calls `GET /hello` to verify credentials and connectivity |
+| `sutro_validate_bundle` | Checks bundle files and auth readiness |
+| `sutro_list_projects` | List projects visible to the authenticated builder |
+| `sutro_list_apps` | List applications, optionally filtered by `projectId` |
+| `sutro_pull_project_data` | Pull project metadata and applications for editing |
+| `sutro_pull_app_for_edit` | Pull a single application with full SCode |
+| `sutro_get_app` | Get application details (`includeScode=true` for full SCode) |
+| `sutro_get_app_status` | Get current job/deployment status |
+| `sutro_get_openapi` | Get the OpenAPI spec for an application |
+| `sutro_deploy_slang` | Compile and deploy SLang (surfaces compile errors) |
+| `sutro_apply_slang_changes` | Deploy, verify status, and optionally publish in one call |
+| `sutro_apply_slang_from_file` | Deploy from a local file path |
+| `sutro_publish_app` | Publish live; supports `versionType` and `replacePublishedVersion` |
+| `sutro_list_secrets` | List secret names (values never returned) |
+| `sutro_set_secret` | Add or update a secret |
+| `sutro_delete_secret` | Remove a secret |
 
-## Build the MCP server
+## Developing / extending
+
+1. Edit `mcp/sutro/src/index.ts` and register new tools with `server.registerTool(...)`.
+2. Call Sutro's HTTP API from each handler using the existing `callSutro` helper; use `zod` for inputs.
+3. Update `rules/sutro.mdc`, `CLAUDE.md`, `.github/copilot-instructions.md`, and `mcp/sutro/templates/` with new tool names.
+4. Run `npm run build` in `mcp/sutro` after changes.
+
+## Publishing to npm
 
 ```bash
 cd mcp/sutro
-npm install
-npm run build
+npm publish
 ```
 
-The runnable entrypoint is `mcp/sutro/dist/index.js`.
-
-## Cursor
-
-1. Merge `config/mcp.cursor-sample.json` into your **Cursor MCP** configuration (project or user), or paste the `sutro` block from the sample.
-2. Adjust `args` to an **absolute path** if `${workspaceFolder}` is not supported in your Cursor version.
-3. Set **`SUTRO_SECURITY_BUNDLE_DIR`** to your extracted bundle path (absolute path recommended).
-4. Add **`rules/sutro.mdc`** under `.cursor/rules/` if you want it applied (set `alwaysApply` in the frontmatter if desired).
-5. Install or reference this repo as a **Cursor plugin** using `.cursor-plugin/plugin.json` when publishing.
-
-## Claude Code
-
-1. Open `config/mcp.claude-sample.json` and replace `/ABSOLUTE/PATH/TO/sutro-dev-agents` with your clone path.
-2. Merge the `mcpServers.sutro` entry into Claude Code’s MCP config for your environment.
-3. Install the plugin via `.claude-plugin/` and `marketplace.json` if you run a marketplace (`/plugin marketplace add …`).
-4. `CLAUDE.md` at the repo root is loaded automatically by Claude Code and provides the MCP tool catalog, auth conventions, and workflow instructions.
-
-## VS Code
-
-1. **MCP**: If your build of VS Code exposes MCP settings, merge the structure in `config/mcp.vscode-sample.json` into **User** or **Workspace** settings. Keys and nesting differ by version and extension—align with your editor’s current MCP docs if the sample does not validate.
-2. **Extension** (optional): open this folder’s `vscode/` in VS Code and run **Extensions: Install Extension from Location…**, or package with `@vscode/vsce` for the Marketplace / Open VSX.
-3. `.github/copilot-instructions.md` is loaded automatically by GitHub Copilot and provides the MCP tool catalog, auth conventions, and workflow instructions.
-
-Commands contributed:
-
-- **Sutro: Open documentation**
-- **Sutro: Open SLang introduction**
-
-## Developing real Sutro tools
-
-1. Edit `mcp/sutro/src/index.ts` and register tools with `server.registerTool(...)`.
-2. Call Sutro’s **HTTP API** (or a future hosted MCP URL) from each handler; use `zod` for inputs.
-3. Update `rules/sutro.mdc` and `README.md` with tool names and required env vars.
-4. Re-run `npm run build` in `mcp/sutro` after changes.
+`prepublishOnly` runs `tsc` automatically. The `dist/` and `templates/` directories are included in the tarball.
 
 ## Updating the SLang skill
 
-Upstream: [github.com/SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills) (path `skills/slang/SKILL.md` in that repo).
+Upstream: [github.com/SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills)
 
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/SutroOrg/sutro-skills/main/skills/slang/SKILL.md" \

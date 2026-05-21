@@ -4,13 +4,33 @@
 
 ## MCP server setup
 
-The `mcp/sutro` stdio MCP server must be built before use:
+Run the following in any project to scaffold agent files and get the MCP config snippet:
 
 ```bash
-cd mcp/sutro && npm install && npm run build
+npx sutro-mcp-server init
 ```
 
-Point your MCP client at `mcp/sutro/dist/index.js` using the sample config in `config/mcp.vscode-sample.json`. Merge the `mcp.servers.sutro` block into your VS Code workspace or user settings and set `SUTRO_SECURITY_BUNDLE_DIR` to the directory containing your extracted security bundle.
+Then configure your VS Code MCP settings (`settings.json`) with:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "sutro": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "sutro-mcp-server"],
+        "env": {
+          "SUTRO_SECURITY_BUNDLE_DIR": "/path/to/your/security-bundle",
+          "SUTRO_API_BASE": "https://sapi.withsutro.com"
+        }
+      }
+    }
+  }
+}
+```
+
+Get your security bundle at [console.withsutro.com](https://console.withsutro.com/). See [auth docs](https://docs.withsutro.com/docs/getting-started/auth/how-to-secure-connections) for details.
 
 ## MCP auth
 
@@ -28,11 +48,7 @@ Run `sutro_validate_bundle` first to check bundle readiness, then `sutro_hello` 
 
 ## SLang
 
-Use the `skills/slang/SKILL.md` reference (vendored from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills)) for SLang syntax and patterns. Prefer `.slang` files when defining backends; align edits with Sutro Studio or the Sutro API when the user's workflow uses those.
-
-## Shape-first workflow
-
-Treat live API responses as source-of-truth when docs drift. Use `npm run sutro-probe-shapes` in `mcp/sutro` to capture endpoint status and top-level payload shapes, then align parsers/normalizers in `mcp/sutro/src/` accordingly.
+Use the SLang language reference from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills) for SLang syntax and patterns. Prefer `.slang` files when defining backends; align edits with Sutro Studio or the Sutro API when the user's workflow uses those.
 
 ## MCP tools
 
@@ -67,5 +83,3 @@ Treat live API responses as source-of-truth when docs drift. Use `npm run sutro-
 
 - [Sutro docs](https://docs.withsutro.com)
 - [Official SLang skills](https://github.com/SutroOrg/sutro-skills)
-- SLang reference: `skills/slang/SKILL.md`
-- MCP setup detail: `skills/sutro-mcp-setup/SKILL.md`

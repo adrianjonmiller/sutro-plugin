@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import fs from "node:fs";
@@ -912,6 +913,12 @@ server.registerTool(
       return okResult({ ok: true, statusCode, name });
     }),
 );
+
+if (process.argv[2] === "init") {
+  const { runInit } = await import("./init.js");
+  await runInit();
+  process.exit(0);
+}
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

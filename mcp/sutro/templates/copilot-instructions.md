@@ -1,33 +1,28 @@
 # Sutro dev agents — agent instructions
 
-**Not affiliated**: This plugin bundle is a community/dev-agents template. Official Sutro docs live at [docs.withsutro.com](https://docs.withsutro.com).
+**Not affiliated**: This is a community/dev-agents integration. Official Sutro docs live at [docs.withsutro.com](https://docs.withsutro.com).
 
-## MCP server setup
+## MCP server
 
-Run the following in any project to scaffold agent files and get the MCP config snippet:
-
-```bash
-npx sutro-mcp-server init
-```
-
-Then configure your editor's MCP client to use:
+This project uses `sutro-mcp-server` via `npx`. No build step required. Configure your VS Code MCP settings with:
 
 ```json
 {
-  "mcpServers": {
-    "sutro": {
-      "command": "npx",
-      "args": ["-y", "sutro-mcp-server"],
-      "env": {
-        "SUTRO_SECURITY_BUNDLE_DIR": "/path/to/your/security-bundle",
-        "SUTRO_API_BASE": "https://sapi.withsutro.com"
+  "mcp": {
+    "servers": {
+      "sutro": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "sutro-mcp-server"],
+        "env": {
+          "SUTRO_SECURITY_BUNDLE_DIR": "/path/to/your/security-bundle",
+          "SUTRO_API_BASE": "https://sapi.withsutro.com"
+        }
       }
     }
   }
 }
 ```
-
-Get your security bundle at [console.withsutro.com](https://console.withsutro.com/). See `skills/sutro-mcp-setup/SKILL.md` for full setup details.
 
 ## MCP auth
 
@@ -39,17 +34,15 @@ The server reads a **security bundle** from `SUTRO_SECURITY_BUNDLE_DIR`. Require
 
 Optional: `SUTRO_API_BASE` (default `https://sapi.withsutro.com`).
 
-If `builder.jwt` is stale, the server can refresh it automatically using `signing.pem` (preferred) or `mtls.key` plus issuer/subject metadata in the bundle. Never print JWTs, private keys, or PEMs in tool output or responses.
+If `builder.jwt` is stale, the server refreshes it automatically using `signing.pem` (preferred) or `mtls.key` plus issuer/subject metadata in the bundle. Never print JWTs, private keys, or PEMs in tool output or responses.
 
 Run `sutro_validate_bundle` first to check bundle readiness, then `sutro_hello` to verify end-to-end connectivity.
 
+Get your security bundle at [console.withsutro.com](https://console.withsutro.com/). See [auth docs](https://docs.withsutro.com/docs/getting-started/auth/how-to-secure-connections) for details.
+
 ## SLang
 
-Use the `skills/slang/SKILL.md` reference (vendored from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills)) for SLang syntax and patterns. Prefer `.slang` files when defining backends; align edits with Sutro Studio or the Sutro API when the user's workflow uses those.
-
-## Shape-first workflow
-
-Treat live API responses as source-of-truth when docs drift. Use `npm run sutro-probe-shapes` in `mcp/sutro` to capture endpoint status and top-level payload shapes, then align parsers/normalizers in `mcp/sutro/src/` accordingly.
+Use the SLang language reference from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills) for syntax and patterns. Prefer `.slang` files when defining backends; align edits with Sutro Studio or the Sutro API when the user's workflow uses those.
 
 ## MCP tools
 
@@ -84,5 +77,3 @@ Treat live API responses as source-of-truth when docs drift. Use `npm run sutro-
 
 - [Sutro docs](https://docs.withsutro.com)
 - [Official SLang skills](https://github.com/SutroOrg/sutro-skills)
-- SLang reference: `skills/slang/SKILL.md`
-- MCP setup detail: `skills/sutro-mcp-setup/SKILL.md`

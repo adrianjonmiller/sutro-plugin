@@ -3,8 +3,8 @@
     "servers": {
       "sutro": {
         "type": "stdio",
-        "command": "node",
-        "args": ["${workspaceFolder}/mcp/sutro/dist/index.js"],
+        "command": "npx",
+        "args": ["-y", "sutro-mcp-server"],
         "env": {
           "SUTRO_SECURITY_BUNDLE_DIR": "/Users/adrianmiller/.config/sutro/security-bundle",
           "SUTRO_API_BASE": "https://sapi.withsutro.com"

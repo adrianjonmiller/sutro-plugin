@@ -1,0 +1,32 @@
+---
+description: Conventions for working with Sutro, SLang, and the bundled MCP server
+alwaysApply: false
+---
+
+sutro-integration:
+
+- **Not affiliated**: This is a community/dev-agents integration. Official Sutro docs live at [docs.withsutro.com](https://docs.withsutro.com).
+- **SLang**: Use the SLang language reference from [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills) for syntax and patterns. Prefer SLang files (e.g. `*.slang`) when defining backends; align edits with Sutro Studio or the Sutro API when the user's workflow uses those.
+- **MCP auth**: The `sutro-mcp-server` reads the **security bundle** from `SUTRO_SECURITY_BUNDLE_DIR` (see [auth docs](https://docs.withsutro.com/docs/getting-started/auth/how-to-secure-connections)): mTLS (`ca.crt`, `mtls.crt`, `mtls.key`), `builder.jwt` (Bearer), and `apiClient.id` (`x-sutro-api-client`). Optional `SUTRO_API_BASE` defaults to `https://sapi.withsutro.com`. If `builder.jwt` is stale, the server can refresh it locally using `signing.pem` (preferred) or `mtls.key` plus issuer/sub metadata in the bundle. Never print JWTs, private keys, or PEMs in tool output.
+- **Official skill updates**: SLang reference lives at [SutroOrg/sutro-skills](https://github.com/SutroOrg/sutro-skills). Refresh periodically to stay in sync with SLang changes.
+
+## MCP tools
+
+| Tool | Purpose |
+| --- | --- |
+| `sutro_hello` | Calls `GET /hello` to verify bundle credentials and connectivity |
+| `sutro_validate_bundle` | Checks bundle files/metadata and verifies auth-readiness before API calls |
+| `sutro_list_projects` | List all projects visible to the authenticated builder |
+| `sutro_list_apps` | List applications, optionally filtered by `projectId` |
+| `sutro_pull_project_data` | Pull project metadata plus project applications for editing workflows |
+| `sutro_pull_app_for_edit` | Pull a single application with full SCode for editing context |
+| `sutro_get_app` | Get application details; pass `includeScode=true` for full SCode |
+| `sutro_get_app_status` | Get current job/deployment status for an application |
+| `sutro_get_openapi` | Get the OpenAPI spec for an application |
+| `sutro_deploy_slang` | Compile SLang and update an application (surfaces compile errors) |
+| `sutro_apply_slang_changes` | Deploy SLang, verify status, and optionally publish in one tool call |
+| `sutro_apply_slang_from_file` | Read SLang from local file path and run deploy/verify/(optional publish) |
+| `sutro_publish_app` | Publish an application live; supports `versionType` and `replacePublishedVersion` |
+| `sutro_list_secrets` | List secret names configured on an application (values never returned) |
+| `sutro_set_secret` | Add or update a secret on an application |
+| `sutro_delete_secret` | Remove a secret from an application |

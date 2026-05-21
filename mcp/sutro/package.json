@@ -1,13 +1,20 @@
 {
   "name": "sutro-mcp-server",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
-  "description": "Stdio MCP server stub for Sutro — replace tools with real API calls.",
+  "description": "Stdio MCP server for Sutro — exposes Sutro project, app, SLang deploy, and secrets tools to AI editors.",
   "main": "dist/index.js",
+  "bin": {
+    "sutro-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist/",
+    "templates/"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "prepublishOnly": "npm run build",
     "sutro-provision": "node scripts/sutro-provision-from-env.mjs",
     "sutro-probe-shapes": "node scripts/sutro-probe-shapes.mjs",
     "test": "npm run build && node --test test/**/*.test.mjs"
